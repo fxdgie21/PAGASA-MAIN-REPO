@@ -13,6 +13,7 @@ import {
   Search, 
   Filter, 
   Eye, 
+  EyeOff,
   Upload, 
   Sparkles, 
   Check, 
@@ -167,6 +168,22 @@ export const AdminOfficials: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleToggleLandingVisibility = (official: OfficialItem) => {
+    const isCurrentlyVisible = official.featuredOnLanding !== false;
+    const newStatus = !isCurrentlyVisible;
+    updateOfficial(official.id, {
+      ...official,
+      featuredOnLanding: newStatus
+    });
+    showToast(
+      'info',
+      newStatus ? 'Featured on Landing Page' : 'Hidden from Landing Page',
+      `${official.fullName || (official as any).name || 'Official'} will ${newStatus ? 'now appear' : 'no longer appear'} on the Public Landing Page.`
+    );
+  };
+
+  const featuredOnLandingCount = officials.filter(o => o.featuredOnLanding !== false).length;
+
   const filteredOfficials = officials.filter((o) => {
     const name = (o.fullName || (o as any).name || '').toLowerCase();
     const pos = (o.position || '').toLowerCase();
@@ -194,6 +211,14 @@ export const AdminOfficials: React.FC = () => {
           <p className="text-xs text-slate-500 mt-0.5">
             Add, update, and manage youth leadership profiles visible on the public Landing Page and Officials Directory.
           </p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200">
+              Total Roster: {officials.length}
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+              ★ Active on Landing Page: {featuredOnLandingCount}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
@@ -307,9 +332,13 @@ export const AdminOfficials: React.FC = () => {
                         <span className="text-[10px] font-mono font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md border border-blue-100">
                           {o.term || '2025–2027'}
                         </span>
-                        {o.featuredOnLanding !== false && (
-                          <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                        {o.featuredOnLanding !== false ? (
+                          <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md border border-emerald-200 inline-flex items-center gap-0.5">
                             ★ Landing Page
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-bold bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-md border border-slate-200">
+                            Hidden from Landing
                           </span>
                         )}
                       </div>
@@ -340,8 +369,25 @@ export const AdminOfficials: React.FC = () => {
 
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <button
+                      type="button"
+                      onClick={() => handleToggleLandingVisibility(o)}
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                        o.featuredOnLanding !== false
+                          ? 'text-emerald-700 hover:bg-emerald-50'
+                          : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                      }`}
+                      title={
+                        o.featuredOnLanding !== false
+                          ? 'Shown on Landing Page. Click to hide from landing page.'
+                          : 'Hidden from Landing Page. Click to feature on landing page.'
+                      }
+                    >
+                      {o.featuredOnLanding !== false ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleOpenEdit(o)}
-                      className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                       title="Edit Official Details"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -351,7 +397,7 @@ export const AdminOfficials: React.FC = () => {
                       onClick={() => {
                         confirmAction({
                           title: 'Remove Officer from Roster',
-                          message: `Are you sure you want to remove ${displayName} from the official leadership roster and Landing Page?`,
+                          message: `Are you sure you want to remove ${displayName} from the official leadership roster? Once removed, this person will be deleted from the database and will NO LONGER appear on the Landing Page or Officials Directory.`,
                           confirmText: 'Remove Officer',
                           cancelText: 'Cancel',
                           variant: 'danger',
@@ -366,7 +412,7 @@ export const AdminOfficials: React.FC = () => {
                         });
                       }}
                       className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                      title="Remove Officer"
+                      title="Remove Officer (Deletes from Roster and Landing Page)"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

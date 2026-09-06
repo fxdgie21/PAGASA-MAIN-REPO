@@ -509,6 +509,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setAttendanceRecords(storageService.loadAttendanceRecords());
       } else if (e.key === STORAGE_KEYS.SETTINGS) {
         setSettings(storageService.loadSettings());
+      } else if (e.key === STORAGE_KEYS.OFFICIALS) {
+        setOfficials(storageService.loadOfficials());
       }
     };
 

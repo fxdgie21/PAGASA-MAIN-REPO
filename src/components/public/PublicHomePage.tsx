@@ -97,8 +97,7 @@ export const PublicHomePage: React.FC = () => {
   const latestAnnouncements = announcements.filter(a => a.isPublished).slice(0, 3);
   const featuredProjects = projects.slice(0, 3);
   const featuredActivities = activities.slice(0, 4);
-  const displayOfficials = officials.filter(o => o.featuredOnLanding !== false);
-  const featuredOfficials = displayOfficials.length > 0 ? displayOfficials : officials;
+  const featuredOfficials = officials.filter(o => o.featuredOnLanding !== false);
   const featuredPhotos = gallery.slice(0, 6);
 
   return (
