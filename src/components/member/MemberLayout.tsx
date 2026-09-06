@@ -55,7 +55,9 @@ export const MemberLayout: React.FC<MemberLayoutProps> = ({ children }) => {
   const unreadNotifs = notifications.filter(n => !n.isRead).length;
 
   const handleCopyMemberId = () => {
-    navigator.clipboard.writeText(currentMember.memberId);
+    try {
+      navigator.clipboard?.writeText(currentMember.memberId)?.catch(() => {});
+    } catch (_) {}
     setCopiedId(true);
     addToast('Member ID copied to clipboard!', 'info');
     setTimeout(() => setCopiedId(false), 2000);

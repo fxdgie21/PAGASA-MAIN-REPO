@@ -95,7 +95,11 @@ export function subscribeToSettings(onData: (data: OrganizationSettings | null) 
       }
     },
     (error) => {
-      handleFirestoreError(error, OperationType.GET, 'settings/organization');
+      try {
+        handleFirestoreError(error, OperationType.GET, 'settings/organization');
+      } catch (err) {
+        console.warn('Firestore subscription notice for settings/organization:', err);
+      }
     }
   );
 }
@@ -120,7 +124,11 @@ export function subscribeToMembers(onData: (members: Member[]) => void): Unsubsc
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'members');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'members');
+      } catch (err) {
+        console.warn('Firestore subscription notice for members:', err);
+      }
     }
   );
 }
@@ -168,7 +176,11 @@ export function subscribeToEvents(onData: (events: EventItem[]) => void): Unsubs
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'events');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'events');
+      } catch (err) {
+        console.warn('Firestore subscription notice for events:', err);
+      }
     }
   );
 }
@@ -202,7 +214,11 @@ export function subscribeToRegistrations(onData: (regs: EventRegistration[]) => 
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'registrations');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'registrations');
+      } catch (err) {
+        console.warn('Firestore subscription notice for registrations:', err);
+      }
     }
   );
 }
@@ -236,7 +252,11 @@ export function subscribeToAttendanceSessions(onData: (sessions: AttendanceSessi
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'attendanceSessions');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'attendanceSessions');
+      } catch (err) {
+        console.warn('Firestore subscription notice for attendanceSessions:', err);
+      }
     }
   );
 }
@@ -261,7 +281,11 @@ export function subscribeToAttendanceRecords(onData: (records: AttendanceRecord[
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'attendanceRecords');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'attendanceRecords');
+      } catch (err) {
+        console.warn('Firestore subscription notice for attendanceRecords:', err);
+      }
     }
   );
 }
@@ -295,7 +319,11 @@ export function subscribeToProjects(onData: (projects: ProjectItem[]) => void): 
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'projects');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'projects');
+      } catch (err) {
+        console.warn('Firestore subscription notice for projects:', err);
+      }
     }
   );
 }
@@ -329,7 +357,11 @@ export function subscribeToActivities(onData: (activities: ActivityItem[]) => vo
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'activities');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'activities');
+      } catch (err) {
+        console.warn('Firestore subscription notice for activities:', err);
+      }
     }
   );
 }
@@ -363,7 +395,11 @@ export function subscribeToAnnouncements(onData: (announcements: AnnouncementIte
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'announcements');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'announcements');
+      } catch (err) {
+        console.warn('Firestore subscription notice for announcements:', err);
+      }
     }
   );
 }
@@ -397,7 +433,11 @@ export function subscribeToOfficials(onData: (officials: OfficialItem[]) => void
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'officials');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'officials');
+      } catch (err) {
+        console.warn('Firestore subscription notice for officials:', err);
+      }
     }
   );
 }
@@ -431,7 +471,11 @@ export function subscribeToCertificates(onData: (certs: CertificateItem[]) => vo
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'certificates');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'certificates');
+      } catch (err) {
+        console.warn('Firestore subscription notice for certificates:', err);
+      }
     }
   );
 }
@@ -465,7 +509,11 @@ export function subscribeToGallery(onData: (gallery: GalleryPhoto[]) => void): U
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'gallery');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'gallery');
+      } catch (err) {
+        console.warn('Firestore subscription notice for gallery:', err);
+      }
     }
   );
 }
@@ -499,7 +547,11 @@ export function subscribeToNotifications(onData: (notifs: NotificationItem[]) =>
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'notifications');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'notifications');
+      } catch (err) {
+        console.warn('Firestore subscription notice for notifications:', err);
+      }
     }
   );
 }
@@ -524,7 +576,11 @@ export function subscribeToAuditLogs(onData: (logs: AuditLogItem[]) => void): Un
       onData(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'auditLogs');
+      try {
+        handleFirestoreError(error, OperationType.LIST, 'auditLogs');
+      } catch (err) {
+        console.warn('Firestore subscription notice for auditLogs:', err);
+      }
     }
   );
 }

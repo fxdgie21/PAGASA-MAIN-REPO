@@ -3,13 +3,15 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
-// Global error handlers to log and prevent silent failures
+// Global error handlers to capture and prevent unhandled promise crashes
 window.addEventListener('error', (event) => {
-  console.error('App runtime error:', event.error || event.message);
+  if (event.defaultPrevented) return;
+  console.warn('App runtime event notice:', event.error?.message || event.message);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  console.error('App unhandled promise rejection:', event.reason);
+  event.preventDefault();
+  console.warn('App unhandled promise rejection captured:', event.reason?.message || event.reason || 'Handled rejection');
 });
 
 createRoot(document.getElementById('root')!).render(

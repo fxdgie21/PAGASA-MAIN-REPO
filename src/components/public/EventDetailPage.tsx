@@ -77,7 +77,9 @@ export const EventDetailPage: React.FC = () => {
   };
 
   const handleShare = () => {
-    navigator.clipboard?.writeText(window.location.href);
+    try {
+      navigator.clipboard?.writeText(window.location.href)?.catch(() => {});
+    } catch (_) {}
     addToast('Event link copied to clipboard!', 'info');
   };
 

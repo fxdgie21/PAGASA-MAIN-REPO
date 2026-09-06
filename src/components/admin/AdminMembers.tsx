@@ -327,7 +327,9 @@ export const AdminMembers: React.FC = () => {
       `Log in to the PAGASA Youth Portal at: ${window.location.origin}`;
     
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(message);
+      try {
+        navigator.clipboard.writeText(message)?.catch(() => {});
+      } catch (_) {}
       addToast(`Copied registration details and credentials for ${m.fullName}!`, 'success');
     }
   };
@@ -570,7 +572,9 @@ export const AdminMembers: React.FC = () => {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    navigator.clipboard.writeText(m.email);
+                                    try {
+                                      navigator.clipboard?.writeText(m.email)?.catch(() => {});
+                                    } catch (_) {}
                                     addToast(`Copied ${m.email} to clipboard`, 'success');
                                   }}
                                   className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
@@ -592,7 +596,9 @@ export const AdminMembers: React.FC = () => {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      navigator.clipboard.writeText(m.contactNumber);
+                                      try {
+                                        navigator.clipboard?.writeText(m.contactNumber)?.catch(() => {});
+                                      } catch (_) {}
                                       addToast(`Copied ${m.contactNumber} to clipboard`, 'success');
                                     }}
                                     className="text-slate-400 hover:text-blue-600 transition-colors cursor-pointer"
@@ -647,7 +653,9 @@ export const AdminMembers: React.FC = () => {
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        navigator.clipboard.writeText(m.portalPassword || '');
+                                        try {
+                                          navigator.clipboard?.writeText(m.portalPassword || '')?.catch(() => {});
+                                        } catch (_) {}
                                         addToast(`Copied password for ${m.fullName}`, 'success');
                                       }}
                                       className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer"
@@ -950,7 +958,9 @@ export const AdminMembers: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  navigator.clipboard.writeText(m.portalPassword || '');
+                                  try {
+                                    navigator.clipboard?.writeText(m.portalPassword || '')?.catch(() => {});
+                                  } catch (_) {}
                                   addToast(`Copied password for ${m.fullName}`, 'success');
                                 }}
                                 className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer"

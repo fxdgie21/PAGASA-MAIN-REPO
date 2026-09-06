@@ -155,7 +155,9 @@ export const AnnouncementsPage: React.FC = () => {
               </div>
               <button
                 onClick={() => {
-                  navigator.clipboard?.writeText(window.location.href);
+                  try {
+                    navigator.clipboard?.writeText(window.location.href)?.catch(() => {});
+                  } catch (_) {}
                   addToast('Announcement link copied!', 'info');
                 }}
                 className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl font-semibold flex items-center gap-1.5 hover:bg-slate-100"

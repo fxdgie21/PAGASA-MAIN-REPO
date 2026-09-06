@@ -74,7 +74,9 @@ export const JoinPage: React.FC = () => {
   }, [birthdate]);
 
   const handleCopy = (text: string, fieldName: string) => {
-    navigator.clipboard.writeText(text);
+    try {
+      navigator.clipboard?.writeText(text)?.catch(() => {});
+    } catch (_) {}
     setCopiedField(fieldName);
     if (addToast) {
       addToast(`Copied ${fieldName} to clipboard`, 'success');

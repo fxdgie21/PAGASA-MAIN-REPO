@@ -17,5 +17,4 @@ export async function testConnection() {
     }
   }
 }
-testConnection();
 

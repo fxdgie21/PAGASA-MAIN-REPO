@@ -235,7 +235,7 @@ export const MemberLoginPage: React.FC = () => {
             </div>
 
             {/* Links */}
-            <div className="pt-2 text-center space-y-2 text-xs">
+            <div className="pt-2 text-center text-xs">
               <p className="text-slate-500">
                 Not registered yet?{' '}
                 <button
@@ -244,16 +244,6 @@ export const MemberLoginPage: React.FC = () => {
                   className="font-bold text-blue-600 hover:underline cursor-pointer"
                 >
                   Register as New Member
-                </button>
-              </p>
-              <p className="text-slate-500">
-                Want to check your registration?{' '}
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage('directory')}
-                  className="font-bold text-slate-700 hover:underline cursor-pointer"
-                >
-                  View Member Directory
                 </button>
               </p>
             </div>
