@@ -44,7 +44,10 @@ import {
   saveMemberDoc,
   deleteMemberDoc,
   fetchMembersFromFirestore,
-  subscribeToMembers
+  subscribeToMembers,
+  subscribeToOfficials,
+  saveOfficialDoc,
+  deleteOfficialDoc
 } from '../firebase/firestoreService';
 import { ConfirmModal, ConfirmModalConfig } from '../components/common/ConfirmModal';
 import {
@@ -576,7 +579,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
       });
-      return () => unsubscribeMembers();
+      const unsubscribeOfficials = subscribeToOfficials((cloudOfficials) => {
+        if (cloudOfficials && cloudOfficials.length > 0) {
+          const sorted = [...cloudOfficials].sort((a, b) => (a.rank || 99) - (b.rank || 99));
+          setOfficials(sorted);
+          storageService.saveOfficials(sorted);
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem('pagasa_officials_cloud_synced', 'true');
+          }
+        } else {
+          const hasInit = typeof window !== 'undefined' && window.localStorage.getItem('pagasa_officials_cloud_synced');
+          if (!hasInit) {
+            const local = storageService.loadOfficials();
+            if (local && local.length > 0) {
+              local.forEach(o => saveOfficialDoc(o).catch(console.warn));
+            }
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem('pagasa_officials_cloud_synced', 'true');
+            }
+          } else {
+            setOfficials([]);
+            storageService.saveOfficials([]);
+          }
+        }
+      });
+
+      return () => {
+        unsubscribeMembers();
+        unsubscribeOfficials();
+      };
     } catch (err) {
       console.warn('Real-time member subscription notice:', err);
     }
@@ -2150,18 +2181,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = [...officials, newOfficial].sort((a, b) => (a.rank || 99) - (b.rank || 99));
     setOfficials(updated);
     storageService.saveOfficials(updated);
+    saveOfficialDoc(newOfficial).catch((err) => console.warn('Cloud official save notice:', err));
     logAuditEvent('Added Organization Official', 'Officials', `Added ${newOfficial.fullName} (${newOfficial.position}) to official leadership roster.`);
-    showToast('success', 'Official Added', `${newOfficial.fullName} was added to the leadership roster and will appear on the landing page.`);
+    showToast('success', 'Official Added', `${newOfficial.fullName} was added to the leadership roster and will appear on the landing page and official directory.`);
   };
 
   const updateOfficial = (id: string, updates: Partial<OfficialItem>) => {
     const target = officials.find(o => o.id === id);
+    let updatedTarget: OfficialItem | null = null;
     const updated = officials.map(o => {
       if (o.id === id) {
         const fullName = (updates.fullName || (updates as any).name || o.fullName || (o as any).name || '').trim();
         const profilePicture = updates.profilePicture || (updates as any).image || o.profilePicture || (o as any).image;
         const contactEmail = updates.contactEmail || (updates as any).email || o.contactEmail || (o as any).email;
-        return {
+        updatedTarget = {
           ...o,
           ...updates,
           fullName,
@@ -2171,11 +2204,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           contactEmail,
           email: contactEmail
         };
+        return updatedTarget;
       }
       return o;
     }).sort((a, b) => (a.rank || 99) - (b.rank || 99));
     setOfficials(updated);
     storageService.saveOfficials(updated);
+    if (updatedTarget) {
+      saveOfficialDoc(updatedTarget).catch((err) => console.warn('Cloud official update notice:', err));
+    }
     logAuditEvent('Updated Official Information', 'Officials', `Modified details for ${target?.fullName || target?.name || id}.`);
     showToast('success', 'Official Updated', 'Official information saved successfully.');
   };
@@ -2185,8 +2222,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = officials.filter(o => o.id !== id);
     setOfficials(updated);
     storageService.saveOfficials(updated);
+    deleteOfficialDoc(id).catch((err) => console.warn('Cloud official delete notice:', err));
     logAuditEvent('Removed Organization Official', 'Officials', `Deleted official ${target?.fullName || target?.name || id} from leadership roster.`);
-    showToast('info', 'Official Removed', `${target?.fullName || target?.name || 'Official'} removed from roster and landing page.`);
+    showToast('info', 'Official Removed', `${target?.fullName || target?.name || 'Official'} removed from roster, landing page, and official directory.`);
   };
 
   // Certificates

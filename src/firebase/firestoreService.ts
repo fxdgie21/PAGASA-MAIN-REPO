@@ -445,7 +445,22 @@ export function subscribeToOfficials(onData: (officials: OfficialItem[]) => void
 export async function saveOfficialDoc(official: OfficialItem): Promise<void> {
   const path = `officials/${official.id}`;
   try {
-    await setDoc(doc(db, 'officials', official.id), official, { merge: true });
+    const payload = {
+      ...official,
+      id: official.id,
+      fullName: (official.fullName || official.name || 'Official Officer').trim(),
+      name: (official.fullName || official.name || 'Official Officer').trim(),
+      position: (official.position || 'Youth Officer').trim(),
+      committee: official.committee || 'Executive Board',
+      term: official.term || '2025–2027',
+      barangay: official.barangay || 'Poblacion',
+      bio: official.bio || 'Dedicated youth leader serving Guimba.',
+      profilePicture: official.profilePicture || official.image || '',
+      image: official.profilePicture || official.image || '',
+      featuredOnLanding: official.featuredOnLanding !== false
+    };
+    const clean = JSON.parse(JSON.stringify(payload));
+    await setDoc(doc(db, 'officials', official.id), clean, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }

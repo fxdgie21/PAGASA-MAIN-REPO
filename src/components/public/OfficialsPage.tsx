@@ -4,20 +4,21 @@ import { Official } from '../../types';
 import { Shield, Mail, Phone, MapPin, Award, Search, Filter, MessageCircle } from 'lucide-react';
 
 export const OfficialsPage: React.FC = () => {
-  const { officials } = useApp();
+  const { officials, currentUser, setCurrentPage } = useApp();
   const [selectedCommittee, setSelectedCommittee] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeOfficialModal, setActiveOfficialModal] = useState<Official | null>(null);
 
-  const committees = ['ALL', ...Array.from(new Set(officials.map(o => o.committee)))];
+  const committees = ['ALL', ...Array.from(new Set(officials.map(o => o.committee || 'Executive Board')))];
 
   const filteredOfficials = officials.filter(o => {
-    const matchesComm = selectedCommittee === 'ALL' || o.committee === selectedCommittee;
+    const comm = o.committee || 'Executive Board';
+    const matchesComm = selectedCommittee === 'ALL' || comm === selectedCommittee;
     const name = (o.fullName || (o as any).name || '').toLowerCase();
     const pos = (o.position || '').toLowerCase();
     const bgy = (o.barangay || '').toLowerCase();
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = name.includes(q) || pos.includes(q) || bgy.includes(q);
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch = !q || name.includes(q) || pos.includes(q) || bgy.includes(q) || comm.toLowerCase().includes(q);
     return matchesComm && matchesSearch;
   });
 
@@ -25,11 +26,22 @@ export const OfficialsPage: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-3">
-        <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-          Executive Directorate & Committees
-        </span>
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            Executive Directorate & Committees
+          </span>
+          {(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN') && (
+            <button
+              onClick={() => setCurrentPage('admin-officials')}
+              className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-xs font-bold transition-colors inline-flex items-center gap-1"
+              title="Open Official Roster in Admin Panel"
+            >
+              <span>⚙️ Manage Official Roster</span>
+            </button>
+          )}
+        </div>
         <h1 className="text-3xl sm:text-5xl font-display font-extrabold text-slate-900 tracking-tight">
-          Organization Officials
+          Organization Officials ({officials.length})
         </h1>
         <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
           Meet the dedicated youth leaders and committee directors driving civic development for the Municipality of Guimba (Term 2025–2027).
@@ -69,50 +81,76 @@ export const OfficialsPage: React.FC = () => {
       </div>
 
       {/* Officials Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredOfficials.map((off) => (
-          <div
-            key={off.id}
-            onClick={() => setActiveOfficialModal(off)}
-            className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col group"
-          >
-            <div className="relative h-60 overflow-hidden bg-slate-100">
-              <img
-                src={off.profilePicture}
-                alt={off.fullName}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute top-3 right-3 bg-slate-900/80 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-xs">
-                Term {off.term}
-              </div>
-              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-4 text-white">
-                <span className="text-[10px] font-extrabold uppercase text-amber-300 tracking-wider block">
-                  {off.committee}
-                </span>
-                <h3 className="font-bold text-base leading-tight font-display">{off.fullName}</h3>
-              </div>
-            </div>
+      {filteredOfficials.length === 0 ? (
+        <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center space-y-3 max-w-md mx-auto">
+          <Shield className="w-10 h-10 text-slate-300 mx-auto" />
+          <h3 className="font-bold text-base text-slate-800">No Officials Found</h3>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            {searchQuery || selectedCommittee !== 'ALL'
+              ? 'No officials match your current search or committee filter.'
+              : 'No officials are currently listed on the roster.'}
+          </p>
+          {(searchQuery || selectedCommittee !== 'ALL') && (
+            <button
+              onClick={() => { setSearchQuery(''); setSelectedCommittee('ALL'); }}
+              className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold transition-colors"
+            >
+              Reset Filters
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredOfficials.map((off) => {
+            const displayName = off.fullName || (off as any).name || 'Official Officer';
+            const displayPic = off.profilePicture || (off as any).image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+            const displayComm = off.committee || 'Executive Board';
 
-            <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-              <div>
-                <p className="text-xs font-bold text-blue-700">{off.position}</p>
-                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Brgy. {off.barangay || 'Poblacion'}, Guimba</span>
-                </p>
-                <p className="text-xs text-slate-600 mt-2 line-clamp-2 italic">
-                  "{off.bio}"
-                </p>
-              </div>
+            return (
+              <div
+                key={off.id}
+                onClick={() => setActiveOfficialModal(off)}
+                className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col group"
+              >
+                <div className="relative h-60 overflow-hidden bg-slate-100">
+                  <img
+                    src={displayPic}
+                    alt={displayName}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-3 right-3 bg-slate-900/80 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-xs">
+                    Term {off.term || '2025–2027'}
+                  </div>
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-4 text-white">
+                    <span className="text-[10px] font-extrabold uppercase text-amber-300 tracking-wider block">
+                      {displayComm}
+                    </span>
+                    <h3 className="font-bold text-base leading-tight font-display">{displayName}</h3>
+                  </div>
+                </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-semibold">
-                <span>View Full Profile</span>
-                <span>→</span>
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                  <div>
+                    <p className="text-xs font-bold text-blue-700">{off.position}</p>
+                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Brgy. {off.barangay || 'Poblacion'}, Guimba</span>
+                    </p>
+                    <p className="text-xs text-slate-600 mt-2 line-clamp-2 italic">
+                      "{off.bio || 'Dedicated youth leader serving Guimba.'}"
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-blue-600 font-semibold">
+                    <span>View Full Profile</span>
+                    <span>→</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Official Detail Modal */}
       {activeOfficialModal && (

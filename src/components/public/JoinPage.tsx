@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { GUIMBA_BARANGAYS } from '../../data/mockData';
 import { 
-  Users, 
   ShieldCheck, 
   Award, 
   QrCode, 
@@ -279,14 +278,6 @@ export const JoinPage: React.FC = () => {
             <div className="flex flex-col gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => setCurrentPage('directory')}
-                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer"
-              >
-                <span>Browse Member Directory</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
                 onClick={() => setCurrentPage('login')}
                 className="w-full py-2.5 px-4 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-bold flex items-center justify-between transition-colors cursor-pointer"
               >
@@ -436,15 +427,6 @@ export const JoinPage: React.FC = () => {
                 </div>
 
                 <div className="pt-2 flex flex-wrap justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentPage('directory')}
-                    className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
-                  >
-                    <Users className="w-4 h-4 text-emerald-400" />
-                    <span>View in Member Directory</span>
-                  </button>
-
                   <button
                     type="button"
                     onClick={() => setCurrentPage('login')}

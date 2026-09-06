@@ -432,7 +432,7 @@ export const PublicHomePage: React.FC = () => {
         </section>
 
         {/* 9. Organization Officials */}
-        <section className="space-y-6">
+        <section id="organization-officials" className="space-y-6 scroll-mt-24">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">

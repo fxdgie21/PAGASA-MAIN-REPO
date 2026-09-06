@@ -18,7 +18,8 @@ import {
   Check, 
   ExternalLink,
   Award,
-  Layers
+  Layers,
+  Users
 } from 'lucide-react';
 
 const GUIMBA_BARANGAYS = [
@@ -197,12 +198,27 @@ export const AdminOfficials: React.FC = () => {
 
         <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
-            onClick={() => setCurrentPage('home')}
+            onClick={() => {
+              setCurrentPage('home');
+              setTimeout(() => {
+                const el = document.getElementById('organization-officials');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }}
             className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
             title="Preview how officials appear on the Landing Page"
           >
             <Eye className="w-3.5 h-3.5 text-blue-600" />
-            <span>Preview on Landing Page</span>
+            <span>Landing Page Preview</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('officials')}
+            className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+            title="View Full Officials Directory Page"
+          >
+            <Users className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Officials Page ({officials.length})</span>
           </button>
 
           <button
