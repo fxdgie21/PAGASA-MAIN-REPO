@@ -377,9 +377,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [joinSubmissions, setJoinSubmissions] = useState<Member[]>(() => {
     const fromStorage = storageService.loadJoinSubmissions();
-    if (fromStorage && fromStorage.length > 0) return fromStorage;
-    const initialMembers = storageService.loadMembers();
-    return initialMembers.filter(m => m.registrationSource === 'JOIN_ORGANIZATION_FORM' || m.membershipStatus === 'Pending' || !m.isAccountActivated);
+    return fromStorage || [];
   });
 
   const [events, setEvents] = useState<EventItem[]>(() => {
@@ -527,58 +525,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     try {
       const unsubscribeMembers = subscribeToMembers((cloudMembers) => {
-        if (cloudMembers && cloudMembers.length > 0) {
-          setMembers(prev => {
-            const map = new Map<string, Member>();
-            prev.forEach(m => map.set(m.id, m));
-            cloudMembers.forEach(m => {
-              const existing = map.get(m.id);
-              if (existing) {
-                const isActivated = Boolean(
-                  m.isAccountActivated === true || 
-                  String(m.isAccountActivated).toLowerCase() === 'true' || 
-                  m.membershipStatus === 'Active' ||
-                  existing.isAccountActivated === true ||
-                  String(existing.isAccountActivated).toLowerCase() === 'true' ||
-                  existing.membershipStatus === 'Active'
-                );
-                const activeStatus = isActivated ? 'Active' : (m.membershipStatus || existing.membershipStatus || 'Pending');
-                const assignedPass = m.portalPassword || existing.portalPassword || m.submittedCredentials?.password || existing.submittedCredentials?.password || '';
+        if (Array.isArray(cloudMembers)) {
+          const DUMMY_IDS = new Set(['mem-new-1', 'mem-1', 'mem-2', 'mem-3', 'mem-4', 'mem-5', 'mem-6', 'mem-7', 'mem-fallback']);
+          const validMembers = cloudMembers.filter(m => 
+            m && 
+            !DUMMY_IDS.has(m.id) && 
+            m.email !== 'jasmine.reyes@gmail.com'
+          );
 
-                map.set(m.id, {
-                  ...existing,
-                  ...m,
-                  portalPassword: assignedPass,
-                  passwordAssigned: Boolean(m.passwordAssigned || existing.passwordAssigned || assignedPass),
-                  isAccountActivated: isActivated,
-                  membershipStatus: activeStatus as MembershipStatus
-                });
-              } else {
-                map.set(m.id, m);
-              }
-            });
-            const merged = Array.from(map.values());
-            storageService.saveMembers(merged);
-            return merged;
-          });
+          setMembers(validMembers);
+          storageService.saveMembers(validMembers);
 
           // Sync join submissions from cloud
-          const cloudSubmissions = cloudMembers.filter(
+          const cloudSubmissions = validMembers.filter(
             m => m.registrationSource === 'JOIN_ORGANIZATION_FORM' || m.membershipStatus === 'Pending' || !m.isAccountActivated
           );
-          if (cloudSubmissions.length > 0) {
-            setJoinSubmissions(prev => {
-              const map = new Map<string, Member>();
-              prev.forEach(m => map.set(m.id, m));
-              cloudSubmissions.forEach(m => {
-                const existing = map.get(m.id);
-                map.set(m.id, existing ? { ...existing, ...m } : m);
-              });
-              const merged = Array.from(map.values());
-              storageService.saveJoinSubmissions(merged);
-              return merged;
-            });
-          }
+          setJoinSubmissions(cloudSubmissions);
+          storageService.saveJoinSubmissions(cloudSubmissions);
         }
       });
       const unsubscribeOfficials = subscribeToOfficials((cloudOfficials) => {
@@ -619,38 +582,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fetchLatestMembers = async (): Promise<{ success: boolean; count: number; message: string }> => {
     try {
       const cloudMembers = await fetchMembersFromFirestore();
-      if (cloudMembers && cloudMembers.length > 0) {
-        setMembers(prev => {
-          const map = new Map<string, Member>();
-          prev.forEach(m => map.set(m.id, m));
-          cloudMembers.forEach(m => {
-            const existing = map.get(m.id);
-            map.set(m.id, existing ? { ...existing, ...m } : m);
-          });
-          const merged = Array.from(map.values());
-          storageService.saveMembers(merged);
-          return merged;
-        });
+      if (Array.isArray(cloudMembers)) {
+        const DUMMY_IDS = new Set(['mem-new-1', 'mem-1', 'mem-2', 'mem-3', 'mem-4', 'mem-5', 'mem-6', 'mem-7', 'mem-fallback']);
+        const validMembers = cloudMembers.filter(m => 
+          m && 
+          !DUMMY_IDS.has(m.id) && 
+          m.email !== 'jasmine.reyes@gmail.com'
+        );
 
-        const cloudSubmissions = cloudMembers.filter(
+        setMembers(validMembers);
+        storageService.saveMembers(validMembers);
+
+        const cloudSubmissions = validMembers.filter(
           m => m.registrationSource === 'JOIN_ORGANIZATION_FORM' || m.membershipStatus === 'Pending' || !m.isAccountActivated
         );
-        if (cloudSubmissions.length > 0) {
-          setJoinSubmissions(prev => {
-            const map = new Map<string, Member>();
-            prev.forEach(m => map.set(m.id, m));
-            cloudSubmissions.forEach(m => {
-              const existing = map.get(m.id);
-              map.set(m.id, existing ? { ...existing, ...m } : m);
-            });
-            const merged = Array.from(map.values());
-            storageService.saveJoinSubmissions(merged);
-            return merged;
-          });
-        }
+        setJoinSubmissions(cloudSubmissions);
+        storageService.saveJoinSubmissions(cloudSubmissions);
 
-        showToast('success', 'Credentials Synchronized', `Fetched ${cloudMembers.length} member records & credentials from Cloud Database.`);
-        return { success: true, count: cloudMembers.length, message: `Fetched ${cloudMembers.length} records.` };
+        showToast('success', 'Credentials Synchronized', `Fetched ${validMembers.length} member records & credentials from Cloud Database.`);
+        return { success: true, count: validMembers.length, message: `Fetched ${validMembers.length} records.` };
       } else {
         showToast('info', 'Up to Date', `Directory is fully synchronized. ${members.length} members loaded.`);
         return { success: true, count: members.length, message: 'All records are up to date.' };
@@ -1190,6 +1140,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storageService.resetAllToFactoryDefaults();
     setSettings(INITIAL_SETTINGS);
     setMembers(INITIAL_MEMBERS);
+    setJoinSubmissions([]);
     setEvents(INITIAL_EVENTS);
     setAttendanceSessions(INITIAL_SESSIONS);
     setAttendanceRecords(INITIAL_ATTENDANCE_RECORDS);

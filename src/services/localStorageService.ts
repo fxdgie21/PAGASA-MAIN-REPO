@@ -255,7 +255,9 @@ class LocalStorageService {
   }
 
   public loadMembers(): Member[] {
-    return this.getItem<Member[]>(STORAGE_KEYS.MEMBERS, INITIAL_MEMBERS);
+    const raw = this.getItem<Member[]>(STORAGE_KEYS.MEMBERS, []);
+    const DUMMY_IDS = new Set(['mem-new-1', 'mem-1', 'mem-2', 'mem-3', 'mem-4', 'mem-5', 'mem-6', 'mem-7', 'mem-fallback']);
+    return (raw || []).filter(m => m && !DUMMY_IDS.has(m.id) && m.email !== 'jasmine.reyes@gmail.com');
   }
 
   public saveMembers(members: Member[]): void {
@@ -263,7 +265,9 @@ class LocalStorageService {
   }
 
   public loadJoinSubmissions(): Member[] {
-    return this.getItem<Member[]>(STORAGE_KEYS.JOIN_SUBMISSIONS, []);
+    const raw = this.getItem<Member[]>(STORAGE_KEYS.JOIN_SUBMISSIONS, []);
+    const DUMMY_IDS = new Set(['mem-new-1', 'mem-1', 'mem-2', 'mem-3', 'mem-4', 'mem-5', 'mem-6', 'mem-7', 'mem-fallback']);
+    return (raw || []).filter(m => m && !DUMMY_IDS.has(m.id) && m.email !== 'jasmine.reyes@gmail.com');
   }
 
   public saveJoinSubmissions(submissions: Member[]): void {
@@ -480,6 +484,7 @@ class LocalStorageService {
     // Re-seed initial data
     this.saveSettings(INITIAL_SETTINGS);
     this.saveMembers(INITIAL_MEMBERS);
+    this.saveJoinSubmissions([]);
     this.saveEvents(INITIAL_EVENTS);
     this.saveAttendanceSessions(INITIAL_SESSIONS);
     this.saveAttendanceRecords(INITIAL_ATTENDANCE_RECORDS);

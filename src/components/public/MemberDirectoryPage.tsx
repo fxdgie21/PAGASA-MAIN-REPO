@@ -207,9 +207,13 @@ export const MemberDirectoryPage: React.FC = () => {
         {filteredMembers.length === 0 ? (
           <div className="text-center py-16 px-4">
             <Users className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-            <h3 className="text-base font-bold text-slate-800">No members match your search</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              {members.length === 0 ? 'No Registered Members Yet' : 'No members match your search'}
+            </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-              Try adjusting your search criteria or register a new member using the button above.
+              {members.length === 0 
+                ? 'Join PAGASA Guimba Youth Organization to be featured in the official member directory.'
+                : 'Try adjusting your search criteria or register a new member using the button above.'}
             </p>
           </div>
         ) : (
