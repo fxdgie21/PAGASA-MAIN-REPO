@@ -130,10 +130,92 @@ export const AdminProjects: React.FC = () => {
         </div>
       </div>
 
-      {/* Projects Table */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+      {/* MOBILE PROJECT CARDS (Phones & Small screens) */}
+      <div className="md:hidden space-y-3">
+        {filteredProjects.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-2">
+            <Target className="w-8 h-8 text-slate-400 mx-auto" />
+            <p className="font-bold text-slate-800 text-sm">No Projects Found</p>
+            <p className="text-xs text-slate-500">No youth programs match your search or filter.</p>
+          </div>
+        ) : (
+          filteredProjects.map((p) => (
+            <div key={p.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+              <div className="flex items-start gap-3">
+                <img src={p.image} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-slate-200" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                      {p.category}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      p.status === 'Ongoing' ? 'bg-emerald-100 text-emerald-800' :
+                      p.status === 'Planning' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'
+                    }`}>
+                      {p.status}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm mt-1">{p.title}</h3>
+                  <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5">{p.description}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Leader: <strong className="text-slate-800">{p.projectLeader}</strong></span>
+                  <span className="font-bold text-blue-700 font-mono">{p.progress}%</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className="bg-blue-600 h-2 rounded-full transition-all" style={{ width: `${p.progress}%` }} />
+                </div>
+              </div>
+
+              {/* Mobile Actions Grid (Min 42px touch targets) */}
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(p)}
+                  className="min-h-[42px] px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span>Edit Project</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    confirmAction({
+                      title: 'Delete Project',
+                      message: `Are you sure you want to delete the project "${p.title}"? All associated project progress and records will be removed.`,
+                      confirmText: 'Delete Project',
+                      cancelText: 'Cancel',
+                      variant: 'danger',
+                      itemDetails: {
+                        label: 'Project Details',
+                        value: p.title,
+                        subValue: `Category: ${p.category} • Leader: ${p.projectLeader}`
+                      },
+                      onConfirm: () => {
+                        deleteProject(p.id);
+                        addToast(`Project "${p.title}" deleted.`, 'info');
+                      }
+                    });
+                  }}
+                  className="min-h-[42px] px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Projects Table (Desktop / Tablet) */}
+      <div className="hidden md:block bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[760px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px]">
                 <th className="py-3 px-4">Project Title</th>

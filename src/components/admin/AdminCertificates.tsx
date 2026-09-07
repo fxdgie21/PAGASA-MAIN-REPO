@@ -175,8 +175,79 @@ export const AdminCertificates: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+        {/* MOBILE CERTIFICATE CARDS (Phones & Small screens) */}
+        <div className="md:hidden space-y-3 p-3.5 pt-0">
+          {filteredCerts.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl p-6 text-center space-y-1 border border-slate-200">
+              <Award className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className="font-bold text-slate-800 text-xs">No Certificates Found</p>
+              <p className="text-[11px] text-slate-500">No issued credentials match your search.</p>
+            </div>
+          ) : (
+            filteredCerts.map((c) => (
+              <div key={c.id} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-xs font-bold text-blue-700 block">
+                      #{c.certificateNumber}
+                    </span>
+                    <h3 className="font-bold text-slate-900 text-sm mt-0.5">{c.recipientName}</h3>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200 flex-shrink-0">
+                    {c.certificateType}
+                  </span>
+                </div>
+
+                <div className="text-xs text-slate-600 bg-white p-2.5 rounded-xl border border-slate-200/70 space-y-1">
+                  <p className="font-semibold text-slate-800 truncate">{c.eventTitle}</p>
+                  <p className="text-[11px] text-slate-400 font-mono">Issued: {c.issueDate}</p>
+                </div>
+
+                {/* Mobile Action Buttons (Min 42px) */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCert(c)}
+                    className="min-h-[42px] px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Print & View</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      confirmAction({
+                        title: 'Revoke / Delete Certificate',
+                        message: `Are you sure you want to delete certificate #${c.certificateNumber} issued to ${c.recipientName}?`,
+                        confirmText: 'Delete Certificate',
+                        cancelText: 'Cancel',
+                        variant: 'danger',
+                        itemDetails: {
+                          label: 'Certificate Credentials',
+                          value: `${c.certificateNumber} — ${c.recipientName}`,
+                          subValue: `${c.certificateType} Certificate • ${c.eventTitle}`
+                        },
+                        onConfirm: () => {
+                          deleteCertificate(c.id);
+                          addToast(`Certificate #${c.certificateNumber} deleted.`, 'info');
+                        }
+                      });
+                    }}
+                    className="min-h-[42px] px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px]">
                 <th className="py-3 px-4">Certificate No.</th>

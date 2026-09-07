@@ -248,7 +248,7 @@ export const AdminOfficials: React.FC = () => {
 
           <button
             onClick={handleOpenCreate}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+            className="min-h-[42px] px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Add Official</span>
@@ -257,7 +257,7 @@ export const AdminOfficials: React.FC = () => {
       </div>
 
       {/* Filters and Search Bar */}
-      <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -265,7 +265,7 @@ export const AdminOfficials: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search official by name, position, or barangay..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
         </div>
 
@@ -274,7 +274,7 @@ export const AdminOfficials: React.FC = () => {
           <select
             value={selectedCommitteeFilter}
             onChange={(e) => setSelectedCommitteeFilter(e.target.value)}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600"
+            className="min-h-[40px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-600 w-full sm:w-auto"
           >
             <option value="ALL">All Committees ({officials.length})</option>
             {COMMITTEES.map((comm) => (
@@ -367,14 +367,14 @@ export const AdminOfficials: React.FC = () => {
                     <span className="truncate">{displayEmail}</span>
                   </div>
 
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => handleToggleLandingVisibility(o)}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      className={`min-h-[38px] min-w-[38px] flex items-center justify-center p-2 rounded-xl transition-colors cursor-pointer border ${
                         o.featuredOnLanding !== false
-                          ? 'text-emerald-700 hover:bg-emerald-50'
-                          : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                          ? 'text-emerald-700 bg-emerald-50/70 border-emerald-200 hover:bg-emerald-100'
+                          : 'text-slate-400 bg-slate-50 border-slate-200 hover:text-slate-600 hover:bg-slate-100'
                       }`}
                       title={
                         o.featuredOnLanding !== false
@@ -387,7 +387,7 @@ export const AdminOfficials: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(o)}
-                      className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                      className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 text-slate-600 bg-slate-50 border border-slate-200 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
                       title="Edit Official Details"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -411,7 +411,7 @@ export const AdminOfficials: React.FC = () => {
                           }
                         });
                       }}
-                      className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      className="min-h-[38px] min-w-[38px] flex items-center justify-center p-2 text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-xl transition-colors cursor-pointer"
                       title="Remove Officer (Deletes from Roster and Landing Page)"
                     >
                       <Trash2 className="w-4 h-4" />

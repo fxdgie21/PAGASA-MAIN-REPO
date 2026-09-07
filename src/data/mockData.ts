@@ -402,11 +402,11 @@ export const INITIAL_SESSIONS: AttendanceSession[] = [
     isOpen: true,
     qrCodeValue: 'PAGASA-ATTEND-EVT-1-KEY2026',
     totalRegistered: 118,
-    presentCount: 94,
-    lateCount: 8,
-    absentCount: 12,
-    excusedCount: 4,
-    attendanceRate: 86.4,
+    presentCount: 0,
+    lateCount: 0,
+    absentCount: 0,
+    excusedCount: 0,
+    attendanceRate: 0,
     createdAt: '2026-09-15T07:30:00Z'
   },
   {
@@ -447,107 +447,7 @@ export const INITIAL_SESSIONS: AttendanceSession[] = [
   }
 ];
 
-export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [
-  {
-    id: 'rec-1',
-    sessionId: 'ses-1',
-    eventId: 'evt-1',
-    eventTitle: 'Guimba Youth Leadership Summit 2026',
-    memberId: 'PAGASA-2026-0042',
-    memberName: 'Juan Dela Cruz',
-    memberBarangay: 'Saranay District (Poblacion)',
-    checkInTime: '8:03 AM',
-    date: '2026-09-15',
-    status: 'Present',
-    method: 'QR_SCAN',
-    recordedBy: 'QR Scanner Station 1'
-  },
-  {
-    id: 'rec-2',
-    sessionId: 'ses-1',
-    eventId: 'evt-1',
-    eventTitle: 'Guimba Youth Leadership Summit 2026',
-    memberId: 'PAGASA-2026-0043',
-    memberName: 'Maria Santos',
-    memberBarangay: 'San Roque',
-    checkInTime: '8:21 AM',
-    date: '2026-09-15',
-    status: 'Late',
-    method: 'QR_SCAN',
-    recordedBy: 'QR Scanner Station 1',
-    remarks: 'Arrived at 8:21 AM due to heavy rain'
-  },
-  {
-    id: 'rec-3',
-    sessionId: 'ses-1',
-    eventId: 'evt-1',
-    eventTitle: 'Guimba Youth Leadership Summit 2026',
-    memberId: 'PAGASA-2026-0044',
-    memberName: 'Angelo Gabriel Pascual',
-    memberBarangay: 'Triala',
-    checkInTime: '7:55 AM',
-    date: '2026-09-15',
-    status: 'Present',
-    method: 'QR_SCAN',
-    recordedBy: 'QR Scanner Station 2'
-  },
-  {
-    id: 'rec-4',
-    sessionId: 'ses-1',
-    eventId: 'evt-1',
-    eventTitle: 'Guimba Youth Leadership Summit 2026',
-    memberId: 'PAGASA-2026-0045',
-    memberName: 'Hazel Grace Fernandez',
-    memberBarangay: 'Santa Veronica District (Poblacion)',
-    checkInTime: '8:05 AM',
-    date: '2026-09-15',
-    status: 'Present',
-    method: 'MANUAL',
-    recordedBy: 'Camille Joy Ramos (Staff)'
-  },
-  {
-    id: 'rec-5',
-    sessionId: 'ses-1',
-    eventId: 'evt-1',
-    eventTitle: 'Guimba Youth Leadership Summit 2026',
-    memberId: 'PAGASA-2026-0046',
-    memberName: 'Jerome Castillo',
-    memberBarangay: 'Cabaruan',
-    checkInTime: '8:35 AM',
-    date: '2026-09-15',
-    status: 'Late',
-    method: 'QR_SCAN',
-    recordedBy: 'QR Scanner Station 1'
-  },
-  {
-    id: 'rec-6',
-    sessionId: 'ses-2',
-    eventId: 'evt-4',
-    eventTitle: 'PAGASA Inter-Barangay Youth Sports Fest 2026',
-    memberId: 'PAGASA-2026-0042',
-    memberName: 'Juan Dela Cruz',
-    memberBarangay: 'Saranay District (Poblacion)',
-    checkInTime: '7:48 AM',
-    date: '2026-08-20',
-    status: 'Present',
-    method: 'QR_SCAN',
-    recordedBy: 'QR Scanner Station 1'
-  },
-  {
-    id: 'rec-7',
-    sessionId: 'ses-2',
-    eventId: 'evt-4',
-    eventTitle: 'PAGASA Inter-Barangay Youth Sports Fest 2026',
-    memberId: 'PAGASA-2026-0043',
-    memberName: 'Maria Santos',
-    memberBarangay: 'San Roque',
-    checkInTime: '7:52 AM',
-    date: '2026-08-20',
-    status: 'Present',
-    method: 'QR_SCAN',
-    recordedBy: 'QR Scanner Station 1'
-  }
-];
+export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [];
 
 export const INITIAL_PROJECTS: ProjectItem[] = [
   {

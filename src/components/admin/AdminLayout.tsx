@@ -191,14 +191,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigateTo = (page: ActivePage) => {
     setCurrentPage(page);
     setIsMobileDrawerOpen(false);
+    setTimeout(() => {
+      document.getElementById('admin-main-viewport')?.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
   };
 
+  useEffect(() => {
+    document.getElementById('admin-main-viewport')?.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col lg:flex-row antialiased text-slate-900 selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-slate-100 flex flex-col lg:flex-row antialiased text-slate-900 selection:bg-blue-600 selection:text-white w-full max-w-full overflow-x-hidden">
       {/* ========================================================= */}
       {/* 1. MOBILE STICKY APP BAR (Header for Phones & Tablets)    */}
       {/* ========================================================= */}
-      <header className="lg:hidden sticky top-0 z-40 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/80 px-3.5 py-2.5 flex items-center justify-between shadow-lg no-print">
+      <header className="lg:hidden sticky top-0 z-40 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/80 px-3.5 py-2.5 flex items-center justify-between shadow-lg no-print flex-shrink-0 w-full">
         {/* Left: Custom 10x Cooler Animated Burger Button + Mini Brand */}
         <div className="flex items-center gap-2.5 min-w-0">
           <button
@@ -595,7 +604,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* ========================================================= */}
       {/* 3. DESKTOP PERMANENT SIDEBAR (Hidden on mobile < lg)       */}
       {/* ========================================================= */}
-      <aside className="hidden lg:flex w-64 bg-slate-950 text-slate-300 flex-shrink-0 flex-col justify-between border-r border-slate-800 no-print sticky top-0 h-screen overflow-y-auto">
+      <aside className="hidden lg:flex w-64 h-full bg-slate-950 text-slate-300 flex-shrink-0 flex-col justify-between border-r border-slate-800 no-print overflow-y-auto z-20">
         <div className="p-6 space-y-6">
           {/* Brand header */}
           <div className="flex items-center gap-3">
@@ -735,16 +744,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </aside>
 
       {/* ========================================================= */}
-      {/* 4. MAIN ADMIN CONTENT BODY (Responsive & Flexible)         */}
+      {/* 4. MAIN ADMIN CONTENT BODY (Independent Scroll Viewport)   */}
       {/* ========================================================= */}
-      <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 pb-28 lg:pb-8 overflow-y-auto max-w-full">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+        <main 
+          id="admin-main-viewport" 
+          className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 pb-36 lg:pb-12 overflow-y-auto overflow-x-hidden max-w-full scroll-smooth"
+        >
+          {children}
+        </main>
+      </div>
 
       {/* ========================================================= */}
       {/* 5. MOBILE BOTTOM THUMB DOCK (Fast One-Tap Navigation)     */}
       {/* ========================================================= */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/90 px-3 py-1.5 flex items-center justify-around shadow-2xl no-print">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/90 px-3 py-2 flex items-center justify-around shadow-2xl no-print pb-[max(env(safe-area-inset-bottom),0.5rem)]">
         {/* Tab 1: Dashboard */}
         <button
           type="button"

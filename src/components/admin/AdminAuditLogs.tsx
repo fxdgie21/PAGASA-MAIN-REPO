@@ -102,10 +102,48 @@ export const AdminAuditLogs: React.FC = () => {
         </select>
       </div>
 
-      {/* Audit Table */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+      {/* MOBILE AUDIT LOG CARDS (Phones & Small screens) */}
+      <div className="md:hidden space-y-3">
+        {filteredLogs.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-2">
+            <Clock className="w-8 h-8 text-slate-400 mx-auto" />
+            <p className="font-bold text-slate-800 text-sm">No Audit Logs Found</p>
+            <p className="text-xs text-slate-500">No log events match your search or filter.</p>
+          </div>
+        ) : (
+          filteredLogs.map((log) => (
+            <div key={log.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                  {log.action}
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {new Date(log.timestamp).toLocaleString([], { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+              <p className="text-xs text-slate-800 font-medium leading-relaxed">{log.details}</p>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                <span className="font-semibold text-slate-700">
+                  {log.performedBy} ({log.performedByRole})
+                </span>
+                <span className="font-mono text-[10px] text-slate-400">
+                  IP: {log.ipAddress || '192.168.1.42'}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Audit Table (Desktop / Tablet) */}
+      <div className="hidden md:block bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[760px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px]">
                 <th className="py-3 px-4">Timestamp</th>

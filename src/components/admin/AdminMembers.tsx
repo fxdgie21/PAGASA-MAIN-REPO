@@ -685,12 +685,12 @@ export const AdminMembers: React.FC = () => {
 
                         {/* Card Footer Actions */}
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             {isActivated ? (
                               <button
                                 type="button"
                                 onClick={() => handleToggleActivation(m)}
-                                className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-bold transition-colors cursor-pointer border border-rose-200"
+                                className="min-h-[40px] px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold transition-colors cursor-pointer border border-rose-200 active:scale-95"
                               >
                                 Deactivate
                               </button>
@@ -698,9 +698,9 @@ export const AdminMembers: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => handleToggleActivation(m)}
-                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center gap-1"
+                                className="min-h-[40px] px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
                               >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <CheckCircle2 className="w-4 h-4" />
                                 <span>Activate Account</span>
                               </button>
                             )}
@@ -708,10 +708,10 @@ export const AdminMembers: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleCopyCredentials(m)}
-                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                              className="min-h-[40px] px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 active:scale-95"
                               title="Copy user credentials to clipboard"
                             >
-                              <Copy className="w-3.5 h-3.5" />
+                              <Copy className="w-4 h-4" />
                               <span>Copy Details</span>
                             </button>
                           </div>
@@ -720,18 +720,19 @@ export const AdminMembers: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setViewingMember(m)}
-                              className="px-2.5 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                              className="min-h-[40px] px-3 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 active:scale-95"
                             >
-                              <QrCode className="w-3.5 h-3.5" />
+                              <QrCode className="w-4 h-4" />
                               <span>Pass / QR</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => handleOpenEdit(m)}
-                              className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                              className="min-h-[40px] px-3 py-2 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 active:scale-95"
                               title="Edit Member Details"
                             >
                               <Edit3 className="w-4 h-4" />
+                              <span>Edit</span>
                             </button>
                           </div>
                         </div>
@@ -849,10 +850,186 @@ export const AdminMembers: React.FC = () => {
         </div>
       </div>
 
-      {/* Members Table */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+      {/* MOBILE MEMBER CARDS (Optimized for Phones & Touch Screens) */}
+      <div className="lg:hidden space-y-3.5">
+        {filteredMembers.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-2">
+            <Users className="w-8 h-8 text-slate-400 mx-auto" />
+            <p className="font-bold text-slate-800 text-sm">No Members Found</p>
+            <p className="text-xs text-slate-500">No members match your current filter or search criteria.</p>
+          </div>
+        ) : (
+          filteredMembers.map((m) => {
+            const isActivated = m.isAccountActivated === true || m.membershipStatus === 'Active';
+            const hasPassword = Boolean(m.portalPassword || m.passwordAssigned);
+
+            return (
+              <div key={m.id} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3">
+                {/* Member Header */}
+                <div className="flex items-start gap-3">
+                  <div 
+                    className="relative cursor-pointer flex-shrink-0"
+                    onClick={() => setPhotoTargetMember(m)}
+                    title="Change member photo"
+                  >
+                    <img
+                      src={m.profilePicture}
+                      alt=""
+                      className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                    />
+                    <div className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-1 rounded-full shadow-xs">
+                      <Camera className="w-2.5 h-2.5" />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="font-bold text-slate-900 text-sm">{m.fullName}</p>
+                      {m.registrationSource === 'JOIN_ORGANIZATION_FORM' && (
+                        <span className="bg-indigo-100 text-indigo-800 text-[9px] font-bold px-1.5 py-0.2 rounded border border-indigo-200 flex items-center gap-0.5">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          <span>Join Form</span>
+                        </span>
+                      )}
+                      {m.membershipStatus === 'Pending' && (
+                        <span className="bg-amber-100 text-amber-800 text-[9px] font-bold px-1.5 py-0.5 rounded border border-amber-200">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-blue-700 font-semibold truncate mt-0.5 flex items-center gap-1">
+                      <Mail className="w-3 h-3 text-red-500 flex-shrink-0" />
+                      <span className="truncate">{m.email}</span>
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Brgy. {m.barangay} • ID: <span className="font-mono font-semibold">{m.memberId}</span> • {m.age} yrs old
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status Badges & Quick Toggles */}
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500">Account:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleActivation(m)}
+                      className={`min-h-[36px] inline-flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                        isActivated
+                          ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                          : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                      }`}
+                      title={isActivated ? 'Click to deactivate' : 'Click to activate'}
+                    >
+                      <Power className={`w-3.5 h-3.5 ${isActivated ? 'text-emerald-600' : 'text-amber-600'}`} />
+                      <span>{isActivated ? 'Activated' : 'Pending Activation'}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500">Password:</span>
+                    {hasPassword ? (
+                      <div className="flex items-center gap-1 bg-white px-2.5 py-1 rounded-xl border border-slate-200">
+                        <span className="font-mono text-xs font-bold text-slate-800">
+                          {revealedPasswords[m.id] ? m.portalPassword : '••••••'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility(m.id)}
+                          className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+                        >
+                          {revealedPasswords[m.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPasswordModal(m)}
+                          className="text-blue-600 hover:text-blue-800 p-1 cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenPasswordModal(m)}
+                        className="min-h-[36px] inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse cursor-pointer"
+                      >
+                        <Key className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Assign Password</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobile Actions Grid (Minimum 42px touch targets) */}
+                <div className="grid grid-cols-4 gap-2 pt-1 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setViewingMember(m)}
+                    className="min-h-[42px] px-1 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-[10px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer border border-slate-200"
+                    title="View QR Pass"
+                  >
+                    <QrCode className="w-4 h-4 text-blue-600" />
+                    <span>Pass / QR</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCopyCredentials(m)}
+                    className="min-h-[42px] px-1 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-[10px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer border border-slate-200"
+                    title="Copy Credentials"
+                  >
+                    <Copy className="w-4 h-4 text-slate-600" />
+                    <span>Copy</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(m)}
+                    className="min-h-[42px] px-1 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-[10px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer border border-slate-200"
+                    title="Edit Member"
+                  >
+                    <Edit3 className="w-4 h-4 text-indigo-600" />
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      confirmAction({
+                        title: 'Delete Member Account',
+                        message: `Are you sure you want to permanently delete the account for ${m.fullName}?`,
+                        confirmText: 'Delete Member',
+                        cancelText: 'Cancel',
+                        variant: 'danger',
+                        itemDetails: {
+                          label: 'Member Record',
+                          value: `${m.fullName} (${m.memberId})`,
+                          subValue: `Gmail: ${m.email} • Barangay: ${m.barangay}`
+                        },
+                        onConfirm: () => {
+                          deleteMember(m.id);
+                          addToast(`Member ${m.fullName} deleted.`, 'info');
+                        }
+                      });
+                    }}
+                    className="min-h-[42px] px-1 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-[10px] font-bold flex flex-col items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer border border-rose-200"
+                    title="Delete Member"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-600" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Members Table (Desktop / Tablet) */}
+      <div className="hidden lg:block bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[960px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px]">
                 <th className="py-3.5 px-4">Member & Gmail Account</th>

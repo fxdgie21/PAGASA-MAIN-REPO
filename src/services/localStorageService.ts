@@ -325,11 +325,43 @@ class LocalStorageService {
   }
 
   public loadAttendanceRecords(): AttendanceRecord[] {
+    if (this.isAvailable()) {
+      const resetKey = 'pagasa_attendance_stream_v2_cleared';
+      if (!window.localStorage.getItem(resetKey)) {
+        window.localStorage.setItem(resetKey, 'true');
+        this.setItem(STORAGE_KEYS.ATTENDANCE_RECORDS, []);
+        
+        // Also ensure ses-1 metrics in storage reflect 0 attendees
+        const sessions = this.getItem<AttendanceSession[]>(STORAGE_KEYS.ATTENDANCE_SESSIONS, INITIAL_SESSIONS);
+        const updatedSessions = sessions.map(s => s.id === 'ses-1' ? {
+          ...s,
+          presentCount: 0,
+          lateCount: 0,
+          absentCount: 0,
+          excusedCount: 0,
+          attendanceRate: 0
+        } : s);
+        this.setItem(STORAGE_KEYS.ATTENDANCE_SESSIONS, updatedSessions);
+        return [];
+      }
+    }
     return this.getItem<AttendanceRecord[]>(STORAGE_KEYS.ATTENDANCE_RECORDS, INITIAL_ATTENDANCE_RECORDS);
   }
 
   public saveAttendanceRecords(records: AttendanceRecord[]): void {
     this.setItem(STORAGE_KEYS.ATTENDANCE_RECORDS, records);
+  }
+
+  public clearAttendanceRecords(sessionId?: string): AttendanceRecord[] {
+    if (sessionId) {
+      const current = this.loadAttendanceRecords();
+      const remaining = current.filter(r => r.sessionId !== sessionId);
+      this.saveAttendanceRecords(remaining);
+      return remaining;
+    } else {
+      this.saveAttendanceRecords([]);
+      return [];
+    }
   }
 
   public loadProjects(): ProjectItem[] {

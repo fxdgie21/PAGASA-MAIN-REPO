@@ -229,6 +229,7 @@ interface AppContextType {
   ) => boolean;
   updateAttendanceRecordStatus: (recordId: string, status: AttendanceStatus, remarks?: string) => void;
   deleteAttendanceRecord: (recordId: string) => void;
+  clearAttendanceRecords: (sessionId?: string) => void;
 
   projects: ProjectItem[];
   addProject: (project: Omit<ProjectItem, 'id'>) => void;
@@ -2193,9 +2194,86 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteAttendanceRecord = (recordId: string) => {
-    setAttendanceRecords(prev => prev.filter(r => r.id !== recordId));
+    const record = attendanceRecords.find(r => r.id === recordId);
+    const updatedRecords = attendanceRecords.filter(r => r.id !== recordId);
+    setAttendanceRecords(updatedRecords);
+    storageService.saveAttendanceRecords(updatedRecords);
+
+    if (record) {
+      const session = attendanceSessions.find(s => s.id === record.sessionId);
+      if (session) {
+        const remainingSessionRecords = updatedRecords.filter(r => r.sessionId === session.id);
+        const present = remainingSessionRecords.filter(r => r.status === 'Present').length;
+        const late = remainingSessionRecords.filter(r => r.status === 'Late').length;
+        const absent = remainingSessionRecords.filter(r => r.status === 'Absent').length;
+        const excused = remainingSessionRecords.filter(r => r.status === 'Excused').length;
+        const totalAttended = present + late;
+        const rate = session.totalRegistered > 0 ? Number(((totalAttended / session.totalRegistered) * 100).toFixed(1)) : 0;
+
+        const updatedSession: AttendanceSession = {
+          ...session,
+          presentCount: present,
+          lateCount: late,
+          absentCount: absent,
+          excusedCount: excused,
+          attendanceRate: rate
+        };
+        const updatedSessions = attendanceSessions.map(s => s.id === session.id ? updatedSession : s);
+        setAttendanceSessions(updatedSessions);
+        storageService.saveAttendanceSessions(updatedSessions);
+      }
+    }
+
     logAuditEvent('Deleted Attendance Record', 'Attendance', `Removed attendance record #${recordId}.`);
     showToast('info', 'Record Removed', 'Attendance entry removed.');
+  };
+
+  const clearAttendanceRecords = (sessionId?: string) => {
+    const targetSessionId = sessionId || attendanceSessions[0]?.id;
+    let updatedRecords: AttendanceRecord[] = [];
+
+    if (targetSessionId) {
+      updatedRecords = attendanceRecords.filter(r => r.sessionId !== targetSessionId);
+    } else {
+      updatedRecords = [];
+    }
+
+    setAttendanceRecords(updatedRecords);
+    storageService.saveAttendanceRecords(updatedRecords);
+
+    // Reset session metrics to 0
+    if (targetSessionId) {
+      setAttendanceSessions(prev => prev.map(s => {
+        if (s.id === targetSessionId) {
+          return {
+            ...s,
+            presentCount: 0,
+            lateCount: 0,
+            absentCount: 0,
+            excusedCount: 0,
+            attendanceRate: 0
+          };
+        }
+        return s;
+      }));
+    } else {
+      setAttendanceSessions(prev => prev.map(s => ({
+        ...s,
+        presentCount: 0,
+        lateCount: 0,
+        absentCount: 0,
+        excusedCount: 0,
+        attendanceRate: 0
+      })));
+    }
+
+    const sessionObj = attendanceSessions.find(s => s.id === targetSessionId);
+    logAuditEvent(
+      'Restarted Live Attendance Stream',
+      'Attendance',
+      `Cleared live attendance stream records for "${sessionObj?.eventTitle || 'terminal'}". Attendees reset to 0.`
+    );
+    showToast('success', 'Live Stream Restarted', `Live attendance records cleared. Stream count is now 0.`);
   };
 
   // Projects
@@ -2461,6 +2539,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         manualCheckIn,
         updateAttendanceRecordStatus,
         deleteAttendanceRecord,
+        clearAttendanceRecords,
         projects,
         addProject,
         updateProject,

@@ -123,17 +123,17 @@ export const AdminEvents: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-slate-900">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-slate-900">
             Events & Assemblies Management
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 mt-0.5">
             Create municipal assemblies, monitor participant caps, and launch QR check-in desks.
           </p>
         </div>
 
         <button
           onClick={handleOpenCreate}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors self-start sm:self-auto"
+          className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-98 cursor-pointer flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Create New Event</span>
@@ -141,7 +141,7 @@ export const AdminEvents: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -167,10 +167,128 @@ export const AdminEvents: React.FC = () => {
         </select>
       </div>
 
-      {/* Events Table */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+      {/* MOBILE EVENT CARDS (Optimized for Phones & Touch Screens) */}
+      <div className="md:hidden space-y-3.5">
+        {filteredEvents.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 border border-slate-200 text-center space-y-2">
+            <Calendar className="w-8 h-8 text-slate-400 mx-auto" />
+            <p className="font-bold text-slate-800 text-sm">No Events Found</p>
+            <p className="text-xs text-slate-500">No event assemblies match your current search or category filter.</p>
+          </div>
+        ) : (
+          filteredEvents.map((evt) => (
+            <div 
+              key={evt.id} 
+              className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs space-y-3"
+            >
+              {/* Event Top row */}
+              <div className="flex items-start gap-3">
+                <img 
+                  src={evt.bannerImage} 
+                  alt="" 
+                  className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-slate-100" 
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+                      {evt.category}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      evt.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' :
+                      evt.status === 'Ongoing' ? 'bg-emerald-100 text-emerald-800' :
+                      'bg-slate-100 text-slate-700'
+                    }`}>
+                      {evt.status}
+                    </span>
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-sm leading-snug">{evt.title}</h3>
+                  <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                    <span className="truncate">{evt.venue}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Schedule and Registered Capacity */}
+              <div className="bg-slate-50 p-2.5 rounded-xl space-y-2 text-xs border border-slate-100">
+                <div className="flex items-center justify-between text-slate-700 text-[11px]">
+                  <span className="flex items-center gap-1 font-medium">
+                    <Calendar className="w-3 h-3 text-slate-400" />
+                    {evt.date} • {evt.time}
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    {evt.registeredCount} / {evt.maxCapacity} Seats
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5">
+                  <div
+                    className="bg-blue-600 h-1.5 rounded-full transition-all"
+                    style={{ width: `${Math.min(100, (evt.registeredCount / evt.maxCapacity) * 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons for Mobile Phone (Minimum 42px touch target) */}
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedEventId(evt.id);
+                    setCurrentPage('event-detail');
+                  }}
+                  className="min-h-[42px] px-2 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                  title="View Public Page"
+                >
+                  <Eye className="w-4 h-4 flex-shrink-0" />
+                  <span>View</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenEdit(evt)}
+                  className="min-h-[42px] px-2 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                  title="Edit Event"
+                >
+                  <Edit3 className="w-4 h-4 flex-shrink-0" />
+                  <span>Edit</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    confirmAction({
+                      title: 'Delete Event Assembly',
+                      message: `Are you sure you want to delete "${evt.title}"? Registered participants and attendance links for this event will also be removed.`,
+                      confirmText: 'Delete Event',
+                      cancelText: 'Cancel',
+                      variant: 'danger',
+                      itemDetails: {
+                        label: 'Event Details',
+                        value: evt.title,
+                        subValue: `Date: ${evt.date} • Venue: ${evt.venue}`
+                      },
+                      onConfirm: () => {
+                        deleteEvent(evt.id);
+                        addToast(`Event "${evt.title}" deleted.`, 'info');
+                      }
+                    });
+                  }}
+                  className="min-h-[42px] px-2 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                  title="Delete Event"
+                >
+                  <Trash2 className="w-4 h-4 flex-shrink-0" />
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* DESKTOP / TABLET EVENTS TABLE */}
+      <div className="hidden md:block bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full min-w-[760px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[10px]">
                 <th className="py-3 px-4">Event Details</th>
@@ -224,20 +342,20 @@ export const AdminEvents: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => {
                           setSelectedEventId(evt.id);
                           setCurrentPage('event-detail');
                         }}
-                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors cursor-pointer"
                         title="View Public Page"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenEdit(evt)}
-                        className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg"
+                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
                         title="Edit Event"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -262,7 +380,7 @@ export const AdminEvents: React.FC = () => {
                             }
                           });
                         }}
-                        className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
                         title="Delete Event"
                       >
                         <Trash2 className="w-4 h-4" />

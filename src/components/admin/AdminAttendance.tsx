@@ -14,7 +14,8 @@ import {
   VolumeX,
   Keyboard,
   UserCheck,
-  RotateCcw
+  RotateCcw,
+  Trash2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -26,7 +27,9 @@ export const AdminAttendance: React.FC = () => {
     scanAttendanceQR, 
     manualCheckIn, 
     showToast,
-    confirmAction
+    confirmAction,
+    clearAttendanceRecords,
+    deleteAttendanceRecord
   } = useApp();
 
   const [selectedSessionId, setSelectedSessionId] = useState<string>(attendanceSessions[0]?.id || '');
@@ -81,6 +84,23 @@ export const AdminAttendance: React.FC = () => {
         osc.stop(audioCtx.currentTime + 0.4);
       }
     } catch (_) {}
+  };
+
+  const handleRestartStream = () => {
+    confirmAction({
+      title: 'Restart Live Attendance Stream?',
+      message: `Are you sure you want to restart the Live Attendance Stream for "${activeSession?.eventTitle || 'this session'}"? This will clear all ${sessionRecords.length} recorded check-ins and reset the counter back to 0 so you can start fresh.`,
+      confirmLabel: 'Yes, Restart to 0',
+      cancelLabel: 'Keep Current Logs',
+      variant: 'danger',
+      onConfirm: () => {
+        clearAttendanceRecords(activeSession?.id);
+        setScanResult({
+          status: 'idle',
+          message: 'Live stream restarted to 0. Ready for new QR scans or manual check-ins.'
+        });
+      }
+    });
   };
 
   const handleProcessScan = (qrValue: string) => {
@@ -161,11 +181,11 @@ export const AdminAttendance: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Audio toggle */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-colors"
+            className="min-h-[42px] min-w-[42px] p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-slate-900 transition-colors flex items-center justify-center cursor-pointer shadow-xs"
             title={soundEnabled ? 'Mute Audio Chimes' : 'Enable Audio Chimes'}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4 text-blue-600" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
@@ -175,7 +195,7 @@ export const AdminAttendance: React.FC = () => {
           <select
             value={selectedSessionId}
             onChange={(e) => setSelectedSessionId(e.target.value)}
-            className="px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 shadow-xs focus:ring-2 focus:ring-blue-600"
+            className="min-h-[42px] px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 shadow-xs focus:ring-2 focus:ring-blue-600 flex-1 sm:flex-initial"
           >
             {attendanceSessions.map((s) => (
               <option key={s.id} value={s.id}>
@@ -184,10 +204,20 @@ export const AdminAttendance: React.FC = () => {
             ))}
           </select>
 
+          {/* Restart Live Stream */}
+          <button
+            onClick={handleRestartStream}
+            className="min-h-[42px] px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer active:scale-95"
+            title="Restart live stream and reset attendance to 0"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-rose-600" />
+            <span>Restart (0)</span>
+          </button>
+
           {/* Print Attendance Sheet */}
           <button
             onClick={() => setIsSheetModalOpen(true)}
-            className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
+            className="min-h-[42px] px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer active:scale-95"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Attendance Sheet</span>
@@ -367,38 +397,82 @@ export const AdminAttendance: React.FC = () => {
 
           {/* Live Check-in Activity Stream */}
           <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-slate-900 font-display">
-                Live Attendance Stream ({sessionRecords.length})
-              </h3>
-              <span className="text-[10px] text-slate-400 font-medium">Auto-recorded</span>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <h3 className="font-bold text-sm text-slate-900 font-display">
+                  Live Attendance Stream ({sessionRecords.length})
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">Auto-recorded</span>
+                <button
+                  type="button"
+                  onClick={handleRestartStream}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition-colors shadow-2xs"
+                  title="Restart stream to 0"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Restart (0)</span>
+                </button>
+              </div>
             </div>
 
             <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto pr-1">
               {sessionRecords.length === 0 ? (
-                <div className="py-8 text-center space-y-2">
-                  <Clock className="w-8 h-8 text-slate-300 mx-auto" />
-                  <p className="text-xs text-slate-400">No attendees logged yet for this session.</p>
+                <div className="py-10 text-center space-y-3 px-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto text-emerald-600 shadow-2xs">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Live Attendance Stream Ready (0 Logged)</h4>
+                    <p className="text-[11px] text-slate-500 mt-1 max-w-xs mx-auto">
+                      The live stream has been reset to 0. Attendees will appear here instantly as youth members scan their QR passes or are logged manually.
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                    Terminal Active • 0 Attendees
+                  </div>
                 </div>
               ) : (
                 sessionRecords.map((r) => (
-                  <div key={r.id} className="py-3 flex items-center justify-between text-xs">
+                  <div key={r.id} className="py-3 flex items-center justify-between text-xs hover:bg-slate-50/60 px-2 rounded-xl transition-colors">
                     <div>
                       <p className="font-bold text-slate-900">{r.memberName}</p>
                       <p className="text-[11px] text-slate-500 font-mono">
                         {r.memberId} • Brgy. {r.memberBarangay} • {r.checkInTime}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        r.status === 'Present' ? 'bg-emerald-100 text-emerald-800' :
-                        r.status === 'Late' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {r.status}
-                      </span>
-                      <span className="block text-[9px] text-slate-400 mt-0.5">
-                        {r.method === 'QR_SCAN' ? '📷 Optical Scan' : '✍ Manual'}
-                      </span>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          r.status === 'Present' ? 'bg-emerald-100 text-emerald-800' :
+                          r.status === 'Late' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {r.status}
+                        </span>
+                        <span className="block text-[9px] text-slate-400 mt-0.5">
+                          {r.method === 'QR_SCAN' ? '📷 Optical Scan' : '✍ Manual'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          confirmAction({
+                            title: 'Remove Attendance Entry?',
+                            message: `Remove attendance entry for ${r.memberName} (${r.memberId})?`,
+                            confirmLabel: 'Remove Entry',
+                            cancelLabel: 'Cancel',
+                            variant: 'danger',
+                            onConfirm: () => deleteAttendanceRecord(r.id)
+                          });
+                        }}
+                        className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                        title="Remove attendee from stream"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))
