@@ -536,6 +536,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setMembers(validMembers);
           storageService.saveMembers(validMembers);
 
+          // Real-time synchronization of current user profile picture and credentials if updated from another device/portal
+          setCurrentUser(prev => {
+            if (!prev) return prev;
+            const emailToMatch = (prev.email || '').toLowerCase().trim();
+            const matchedCurrent = validMembers.find(m => 
+              (m.id && m.id === prev.id) ||
+              (m.memberId && m.memberId === prev.memberId) ||
+              (m.email && m.email.toLowerCase().trim() === emailToMatch)
+            );
+            if (matchedCurrent && (matchedCurrent.profilePicture !== prev.avatar || matchedCurrent.fullName !== prev.name)) {
+              const syncedUser: User = {
+                ...prev,
+                avatar: matchedCurrent.profilePicture || prev.avatar,
+                name: matchedCurrent.fullName || prev.name,
+                memberId: matchedCurrent.memberId || prev.memberId
+              };
+              storageService.saveUserSession(syncedUser, currentRole);
+              return syncedUser;
+            }
+            return prev;
+          });
+
           // Sync join submissions from cloud
           const cloudSubmissions = validMembers.filter(
             m => m.registrationSource === 'JOIN_ORGANIZATION_FORM' || m.membershipStatus === 'Pending' || !m.isAccountActivated
@@ -592,6 +614,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         setMembers(validMembers);
         storageService.saveMembers(validMembers);
+
+        // Real-time synchronization of current user profile picture and credentials
+        setCurrentUser(prev => {
+          if (!prev) return prev;
+          const emailToMatch = (prev.email || '').toLowerCase().trim();
+          const matchedCurrent = validMembers.find(m => 
+            (m.id && m.id === prev.id) ||
+            (m.memberId && m.memberId === prev.memberId) ||
+            (m.email && m.email.toLowerCase().trim() === emailToMatch)
+          );
+          if (matchedCurrent && (matchedCurrent.profilePicture !== prev.avatar || matchedCurrent.fullName !== prev.name)) {
+            const syncedUser: User = {
+              ...prev,
+              avatar: matchedCurrent.profilePicture || prev.avatar,
+              name: matchedCurrent.fullName || prev.name,
+              memberId: matchedCurrent.memberId || prev.memberId
+            };
+            storageService.saveUserSession(syncedUser, currentRole);
+            return syncedUser;
+          }
+          return prev;
+        });
 
         const cloudSubmissions = validMembers.filter(
           m => m.registrationSource === 'JOIN_ORGANIZATION_FORM' || m.membershipStatus === 'Pending' || !m.isAccountActivated
@@ -847,15 +891,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const fetchedName = authUser.name || (matchedMember ? matchedMember.fullName : formatNameFromEmail(trimmedEmail));
       const memberId = matchedMember?.memberId || `PAGASA-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
+      let finalMember: Member;
       if (matchedMember) {
-        setMembers(prev => prev.map(m => m.id === matchedMember.id ? {
-          ...m,
+        finalMember = {
+          ...matchedMember,
           fullName: fetchedName,
-          profilePicture: authUser.avatar || m.profilePicture
-        } : m));
+          profilePicture: authUser.avatar || matchedMember.profilePicture,
+          isAccountActivated: true,
+          membershipStatus: 'Active'
+        };
+        setMembers(prev => {
+          const next = prev.map(m => m.id === matchedMember.id ? finalMember : m);
+          storageService.saveMembers(next);
+          return next;
+        });
       } else {
-        const newMember: Member = {
-          id: authUser.id || 'mem-' + Date.now(),
+        finalMember = {
+          id: (authUser.id || 'mem-' + Date.now()).replace(/[^a-zA-Z0-9_-]/g, '_'),
           memberId: memberId,
           fullName: fetchedName,
           email: email,
@@ -869,7 +921,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           occupation: isSuperAdmin ? 'President & Executive Administrator' : 'Active Youth Member',
           profilePicture: authUser.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(fetchedName)}`,
           membershipStatus: 'Active',
+          isAccountActivated: true,
           membershipDate: '2026-01-01',
+          registrationDate: new Date().toISOString().split('T')[0],
           organizationPosition: isSuperAdmin ? 'President' : 'Youth Member',
           committee: isSuperAdmin ? 'Executive Board' : 'General Youth Volunteer',
           emergencyContact: {
@@ -887,8 +941,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             certificatesEarned: 0
           }
         };
-        setMembers(prev => [newMember, ...prev.filter(m => (m.email || '').toLowerCase().trim() !== trimmedEmail)]);
+        setMembers(prev => {
+          const next = [finalMember, ...prev.filter(m => (m.email || '').toLowerCase().trim() !== trimmedEmail)];
+          storageService.saveMembers(next);
+          return next;
+        });
       }
+
+      // Persist to Cloud Firestore so the user profile picture & credentials appear immediately in Member Directory across devices
+      saveMemberDoc(finalMember).catch(err => {
+        console.warn('Firestore member sync notice on Google Sign-In:', err);
+      });
 
       const userObj: User = {
         id: authUser.id,
@@ -1005,7 +1068,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
-    setMembers(prev => [newMember, ...prev.filter(m => (m.email || '').toLowerCase().trim() !== (newMember.email || '').toLowerCase().trim())]);
+    setMembers(prev => {
+      const next = [newMember, ...prev.filter(m => (m.email || '').toLowerCase().trim() !== (newMember.email || '').toLowerCase().trim())];
+      storageService.saveMembers(next);
+      return next;
+    });
+    saveMemberDoc(newMember).catch(err => console.warn('Firestore member sync notice on loginUser:', err));
 
     const userObj: User = {
       id: newMember.id,
@@ -1060,32 +1128,96 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Profile & Avatar Updates
   const updateCurrentUser = (updates: Partial<User>) => {
+    let targetUpdatedMember: Member | null = null;
+    let effectiveUser: User | null = null;
+
     setCurrentUser(prev => {
       if (!prev) return prev;
-      const updated = { ...prev, ...updates };
-      storageService.saveUserSession(updated, currentRole);
-      return updated;
+      effectiveUser = { ...prev, ...updates };
+      storageService.saveUserSession(effectiveUser, currentRole);
+      return effectiveUser;
     });
 
-    if (updates.avatar || updates.name) {
+    if (updates.avatar || updates.name || updates.memberId || updates.email) {
       setMembers(prev => {
+        const emailToMatch = (updates.email || currentUser?.email || '').toLowerCase().trim();
+        const idToMatch = currentUser?.id;
+        const memberIdToMatch = updates.memberId || currentUser?.memberId;
+
+        let matched = false;
         const updatedList = prev.map(m => {
-          if (
-            (currentUser?.id && m.id === currentUser.id) || 
-            (currentUser?.memberId && m.memberId === currentUser.memberId) || 
-            (currentUser?.email && m.email && m.email.toLowerCase() === currentUser.email.toLowerCase())
-          ) {
-            return {
+          const isMatch = Boolean(
+            (idToMatch && m.id === idToMatch) || 
+            (memberIdToMatch && m.memberId === memberIdToMatch) || 
+            (emailToMatch && m.email && m.email.toLowerCase().trim() === emailToMatch)
+          );
+          if (isMatch) {
+            matched = true;
+            targetUpdatedMember = {
               ...m,
               ...(updates.avatar ? { profilePicture: updates.avatar } : {}),
-              ...(updates.name ? { fullName: updates.name } : {})
+              ...(updates.name ? { fullName: updates.name } : {}),
+              ...(updates.email ? { email: updates.email } : {}),
+              ...(updates.memberId ? { memberId: updates.memberId } : {})
             };
+            return targetUpdatedMember;
           }
           return m;
         });
+
+        // If member doesn't exist in members array yet (e.g. freshly signed in admin or user), insert them so they show in Member Directory!
+        if (!matched && (currentUser || updates.email)) {
+          const fallbackName = updates.name || currentUser?.name || 'Youth Member';
+          const fallbackEmail = updates.email || currentUser?.email || 'member@pagasaguimba.org';
+          const fallbackAvatar = updates.avatar || currentUser?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(fallbackName)}`;
+          const newM: Member = {
+            id: (currentUser?.id || 'mem-' + Date.now()).replace(/[^a-zA-Z0-9_-]/g, '_'),
+            memberId: updates.memberId || currentUser?.memberId || `PAGASA-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+            fullName: fallbackName,
+            email: fallbackEmail,
+            contactNumber: '+63 917 554 8920',
+            birthdate: '2004-01-01',
+            age: 22,
+            gender: 'Male',
+            address: 'Brgy. Saint John District (Poblacion), Guimba',
+            barangay: 'Saint John District (Poblacion)',
+            educationalStatus: 'College / University',
+            occupation: currentRole === 'SUPER_ADMIN' ? 'President & Executive Administrator' : 'Active Youth Member',
+            profilePicture: fallbackAvatar,
+            membershipStatus: 'Active',
+            isAccountActivated: true,
+            membershipDate: '2026-01-01',
+            registrationDate: new Date().toISOString().split('T')[0],
+            organizationPosition: currentRole === 'SUPER_ADMIN' ? 'President' : 'Youth Member',
+            committee: currentRole === 'SUPER_ADMIN' ? 'Executive Board' : 'General Youth Volunteer',
+            emergencyContact: {
+              name: 'Emergency Contact',
+              relationship: 'Parent / Guardian',
+              contactNumber: '+63 917 554 8920'
+            },
+            registeredEventIds: [],
+            stats: {
+              eventsJoined: 0,
+              totalAttendance: 0,
+              attendanceRate: 100,
+              volunteerHours: 0,
+              projectsParticipated: 0,
+              certificatesEarned: 0
+            }
+          };
+          targetUpdatedMember = newM;
+          updatedList.unshift(newM);
+        }
+
         storageService.saveMembers(updatedList);
         return updatedList;
       });
+
+      if (targetUpdatedMember) {
+        saveMemberDoc(targetUpdatedMember).catch(err => {
+          console.warn('Firestore member update sync notice:', err);
+        });
+      }
     }
 
     logAuditEvent('Updated User Profile', 'Settings', `User ${updates.name || currentUser?.name || 'Account'} updated profile details.`);
@@ -1185,20 +1317,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateMember = (id: string, updates: Partial<Member>) => {
     let targetUpdatedMember: Member | null = null;
+    const normalizedTarget = (id || '').trim().toLowerCase();
+
     setMembers(prev => {
+      const target = prev.find(m => 
+        (m.id && m.id === id) || 
+        (m.memberId && m.memberId.toLowerCase() === normalizedTarget) ||
+        (m.email && m.email.toLowerCase() === normalizedTarget)
+      );
+
+      let matched = false;
       const updatedList = prev.map(m => {
-        if (m.id === id || m.memberId === id) {
+        const isMatch = Boolean(
+          m.id === id || 
+          m.memberId === id ||
+          (target && m.id === target.id) ||
+          (m.email && m.email.toLowerCase() === normalizedTarget)
+        );
+        if (isMatch) {
+          matched = true;
           targetUpdatedMember = { ...m, ...updates };
           return targetUpdatedMember;
         }
         return m;
       });
+
+      // If not in members list yet but matches currentUser, create/insert them so they show in Member Directory!
+      if (!matched && currentUser && (currentUser.id === id || currentUser.memberId === id || (currentUser.email && currentUser.email.toLowerCase() === normalizedTarget))) {
+        const created: Member = {
+          ...currentMember,
+          ...updates,
+          id: (currentUser.id || `mem-${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '_'),
+          memberId: currentUser.memberId || `PAGASA-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+          fullName: updates.fullName || currentUser.name || 'Youth Member',
+          email: updates.email || currentUser.email || 'member@pagasaguimba.org',
+          profilePicture: updates.profilePicture || currentUser.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=user`
+        };
+        targetUpdatedMember = created;
+        updatedList.unshift(created);
+      }
+
       storageService.saveMembers(updatedList);
       return updatedList;
     });
 
     setJoinSubmissions(prev => prev.map(m => {
-      if (m.id === id || m.memberId === id) {
+      if (m.id === id || m.memberId === id || (targetUpdatedMember && m.id === targetUpdatedMember.id)) {
         return { ...m, ...updates };
       }
       return m;
@@ -1210,21 +1374,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     }
 
-    if (currentUser && (currentUser.id === id || currentUser.memberId === id || currentUser.memberId === updates.memberId || (currentUser.email && updates.email && currentUser.email.toLowerCase() === (updates.email || '').toLowerCase()))) {
-      setCurrentUser(prev => {
-        if (!prev) return null;
-        const updatedUser = {
-          ...prev,
-          ...(updates.fullName ? { name: updates.fullName } : {}),
-          ...(updates.profilePicture ? { avatar: updates.profilePicture } : {})
-        };
-        storageService.saveUserSession(updatedUser, currentRole);
-        return updatedUser;
-      });
+    if (currentUser) {
+      const isTargetUser = 
+        currentUser.id === id || 
+        currentUser.memberId === id || 
+        (currentUser.email && normalizedTarget === currentUser.email.toLowerCase()) ||
+        (targetUpdatedMember && currentUser.email && targetUpdatedMember.email && currentUser.email.toLowerCase() === targetUpdatedMember.email.toLowerCase());
+
+      if (isTargetUser) {
+        setCurrentUser(prev => {
+          if (!prev) return null;
+          const updatedUser = {
+            ...prev,
+            ...(updates.fullName ? { name: updates.fullName } : {}),
+            ...(updates.profilePicture ? { avatar: updates.profilePicture } : {})
+          };
+          storageService.saveUserSession(updatedUser, currentRole);
+          return updatedUser;
+        });
+      }
     }
-    const target = members.find(m => m.id === id || m.memberId === id);
-    logAuditEvent('Updated Member Profile', 'Members', `Updated profile of ${target?.fullName || id}.`);
-    showToast('success', 'Member Updated', 'Member details saved successfully.');
+
+    const target = members.find(m => m.id === id || m.memberId === id || (m.email && m.email.toLowerCase() === normalizedTarget));
+    logAuditEvent('Updated Member Profile', 'Members', `Updated profile of ${target?.fullName || updates.fullName || id}.`);
+    showToast('success', 'Profile & Directory Updated', 'Profile picture and member details have been updated.');
   };
 
   const updateMemberStatus = (id: string, status: MembershipStatus) => {

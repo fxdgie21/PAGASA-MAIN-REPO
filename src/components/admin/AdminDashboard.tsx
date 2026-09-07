@@ -87,105 +87,105 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         {/* Card 1: Members */}
         <div 
           onClick={() => setCurrentPage('admin-members')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-2"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-1.5 sm:space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Members</span>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-              <Users className="w-4 h-4" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Members</span>
+            <div className="p-1.5 sm:p-2 bg-blue-50 text-blue-600 rounded-xl">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 font-display">{totalMembers}</span>
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">{totalMembers}</span>
             {pendingMembers > 0 && (
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">
-                {pendingMembers} pending
+              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded-full">
+                {pendingMembers} pend
               </span>
             )}
           </div>
-          <p className="text-[11px] text-slate-500">{activeMembers} active youth verified</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">{activeMembers} active youth</p>
         </div>
 
         {/* Card 2: Events */}
         <div 
           onClick={() => setCurrentPage('admin-events')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-2"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-1.5 sm:space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Events & Summits</span>
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-              <Calendar className="w-4 h-4" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Events</span>
+            <div className="p-1.5 sm:p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 font-display">{events.length}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-              {upcomingEvents} upcoming
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">{events.length}</span>
+            <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded-full">
+              {upcomingEvents} up
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">Municipal youth gatherings</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">Youth assemblies</p>
         </div>
 
         {/* Card 3: Attendance Rate */}
         <div 
           onClick={() => setCurrentPage('admin-attendance')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-2"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-1.5 sm:space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">QR Attendance Rate</span>
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
-              <CheckCircle2 className="w-4 h-4" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Attendance</span>
+            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600 font-display">{avgAttendance}%</span>
-            <span className="text-[10px] font-bold text-emerald-700 flex items-center">
-              <TrendingUp className="w-3 h-3 inline mr-0.5" /> +4.2%
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-xl sm:text-2xl font-black text-emerald-600 font-display">{avgAttendance}%</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 flex items-center">
+              <TrendingUp className="w-2.5 h-2.5 inline mr-0.5" /> +4.2%
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">{presentCount} check-in logs recorded</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">{presentCount} check-ins</p>
         </div>
 
         {/* Card 4: Projects */}
         <div 
           onClick={() => setCurrentPage('admin-projects')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-2"
+          className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-1.5 sm:space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Community Projects</span>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
-              <FolderGit2 className="w-4 h-4" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Projects</span>
+            <div className="p-1.5 sm:p-2 bg-purple-50 text-purple-600 rounded-xl">
+              <FolderGit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900 font-display">{projects.length}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-xl sm:text-2xl font-black text-slate-900 font-display">{projects.length}</span>
+            <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-purple-100 text-purple-800 rounded-full">
               Active
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">Grassroots initiatives</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">Initiatives</p>
         </div>
 
         {/* Card 5: Certificates */}
         <div 
           onClick={() => setCurrentPage('admin-certificates')}
-          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-2"
+          className="col-span-2 sm:col-span-2 lg:col-span-1 bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-xs hover:border-blue-300 transition-all cursor-pointer space-y-1.5 sm:space-y-2"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Certificates Issued</span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
-              <Award className="w-4 h-4" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Certificates</span>
+            <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-600 rounded-xl">
+              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600 font-display">{certificates.length}</span>
-            <span className="text-[10px] font-bold text-amber-700">Verified</span>
+          <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+            <span className="text-xl sm:text-2xl font-black text-amber-600 font-display">{certificates.length}</span>
+            <span className="text-[9px] sm:text-[10px] font-bold text-amber-700">Verified</span>
           </div>
-          <p className="text-[11px] text-slate-500">QR-verifiable credentials</p>
+          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">Issued credentials</p>
         </div>
       </div>
 

@@ -134,10 +134,19 @@ export function subscribeToMembers(onData: (members: Member[]) => void): Unsubsc
 }
 
 export async function saveMemberDoc(member: Member): Promise<void> {
-  const path = `members/${member.id}`;
+  const docId = (member.id || `mem-${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+  const path = `members/${docId}`;
   try {
-    const cleanData = JSON.parse(JSON.stringify(member));
-    await setDoc(doc(db, 'members', member.id), cleanData, { merge: true });
+    const cleanData = JSON.parse(JSON.stringify({
+      ...member,
+      id: docId,
+      memberId: member.memberId || 'PAGASA-2026-0001',
+      fullName: member.fullName || 'Youth Member',
+      email: member.email || 'member@pagasaguimba.org',
+      barangay: member.barangay || 'San Roque',
+      membershipStatus: member.membershipStatus || 'Active'
+    }));
+    await setDoc(doc(db, 'members', docId), cleanData, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
